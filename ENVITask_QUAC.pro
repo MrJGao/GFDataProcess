@@ -1,8 +1,8 @@
 PRO ENVITask_QUAC
   ; Start the application
-  e = ENVI()
+  e = ENVI(/Headless)
   
-  inputPath='D:\HXFarm\GF1'
+  inputPath='F:\HXFarm\GF1'
   
   ; Open an input file
   Files = FILE_SEARCH(inputPath,'*_rc.dat',/FOLD_CASE,count=count)
@@ -20,9 +20,9 @@ PRO ENVITask_QUAC
     ;Task.SENSOR = 'Landsat TM'
     
     outputfile=outPath+'\'+FILE_BASENAME(Files[i],'.dat',/FOLD_CASE)+'_quac.dat'
-    print,'the',i+1,'scene start     ',outputfile
+    print,'the------',i+1,'----scene start:     ',outputfile
     Task.OUTPUT_RASTER_URI = outputfile
-    print,'the',i+1,'scene finished     ',outputfile
+    
     output = File_Search(outputfile)
 
     fileCount1 = SIZE(output)
@@ -33,6 +33,7 @@ PRO ENVITask_QUAC
     
     ; Run the task
     Task.Execute
+    print,'the------',i+1,'-----scene finished:     ',outputfile
   ENDFOR
   ;  ; Get the data collection
   ;  DataColl = e.Data

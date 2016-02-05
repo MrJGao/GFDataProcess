@@ -28,9 +28,9 @@ END
 ;RadiometricCalibration for GF-1
 PRO ENVITask_RadiometricCalibration
   ; Start the application
-  e = ENVI()
+  e = ENVI(/Headless)
   
-  inputPath='D:\HXFarm\GF1'
+  inputPath='F:\HXFarm\GF1'
   ; Open an input file
   Files = FILE_SEARCH(inputPath,'*.tiff',/FOLD_CASE,count=count)
   print,'All ',count,'    scenes will Radiometriccalibration'
