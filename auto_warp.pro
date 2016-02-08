@@ -1,12 +1,63 @@
+PRO DeleteDatData,InputPath
+
+  Delete_Files = FILE_SEARCH(InputPath,'*.dat',/FOLD_CASE,count=count)
+
+  IF count ne 0 then BEGIN
+    FOR i=0,count-1 DO BEGIN
+      ENVI_OPEN_FILE,Delete_Files[i],R_FID=fid
+      ENVI_FILE_QUERY,fid,nb=nb,DIMS=dims
+      ENVI_FILE_MNG,id=fid,/remove,/delete
+    ENDFOR
+  ENDIF
+  ENVI_BATCH_EXIT
+END
+
+
+PRO ConvertToGeoTIFF,InputFile
+
+  ;InputFile='D:\HXFarm\TM\LC81180272015007LGN00\LC81180272015007LGN00_rc_quac_sharpen.dat'
+
+  Input = File_Search(InputFile,count=count)
+  ncount=count
+  if ncount EQ 0 then begin
+    return
+  endif
+
+  ;ENVI,/RESTORE_BASE_SAVE_FILES
+  ;ENVI_BATCH_INIT,LOG_FILE="C:\envi_Preprocessing.Log"
+  ENVI_OPEN_FILE,InputFile,R_FID=fid
+  ENVI_FILE_QUERY,fid,nb=nb,DIMS=dims
+
+  InputPath=file_dirname(InputFile)
+
+  OutputFile=InputPath+'\'+FILE_BASENAME(InputFile,'.dat',/FOLD_CASE)+'.tif'
+
+  output = File_Search(OutputFile)
+
+  fileCount1 = SIZE(output)
+  if fileCount1[0] gt 0 then begin
+    print,outputfile+' is already exist'
+    ;delete the *.dat files
+    DeleteDatData,InputPath
+    return
+  endif
+
+  ;do convert
+  ENVI_OUTPUT_TO_EXTERNAL_FORMAT,dims=dims,fid=fid,pos=INDGEN(nb),out_name=OutputFile,/TIFF
+
+  ;delete the *.dat files
+  DeleteDatData,InputPath
+
+END
 PRO Auto_WARP
 
   COMPILE_OPT idl2
   ENVI,/RESTORE_BASE_SAVE_FILES
   ENVI_BATCH_INIT,/NO_STATUS_WINDOW
   
-  inputPath='D:\HXFarm\GF1'
+  inputPath='F:\HXFarm\GF1'
 
-  WarpFiles=FILE_SEARCH(inputPath,'_rpc.dat',/FOLD_CASE,count=count)
+  WarpFiles=FILE_SEARCH(inputPath,'*_rpc.dat',/FOLD_CASE,count=count)
   
   print,'共',count,'    景影像几何校正'
   
@@ -16,9 +67,17 @@ PRO Auto_WARP
     
     outPath= file_dirname(WarpFile)
     
-    out_name=outPath+'\'+FILE_BASENAME(WarpFile,'.tif',/FOLD_CASE)+'_warp.tif'
+    out_name=outPath+'\'+FILE_BASENAME(WarpFile,'.dat',/FOLD_CASE)+'_warp.dat'
     
-    BaseFile='D:\HXFarm\ref\118_26_27.tif'
+    output = File_Search(out_name)
+
+    fileCount1 = SIZE(output)
+    if fileCount1[0] gt 0 then begin
+      print,out_name+' is already exist'
+      continue
+    endif
+    
+    BaseFile='D:\77211356\Data\Hongxing\ref\118_26_27.tif'
     ;WarpFile='D:\77211356\Data\GF\HuBei\huanggang\20150122\GF1_WFV2_E115.9_N29.3_20150122_L1A0000606437\GF1_WFV2_E115.9_N29.3_20150122_L1A0000606437_rpc.tif'
     
     ;打开参考影像
@@ -38,7 +97,7 @@ PRO Auto_WARP
     ;波段号，0为第一波段
     warp_match_pos = 0L
     ;控制点个数，适中，GF-1一整景影像一般530多-750（参考影像为TM8的全色）
-    num_tie_points = 575
+    num_tie_points = 375
     ;移动窗口，默认为11，值越大越准，时间越长
     move_win = 11
     ;搜索窗口，默认为81，值越大越准，时间越长
@@ -94,6 +153,10 @@ PRO Auto_WARP
       method=2, out_name=out_name, $
       pts=pts,r_fid=r_fid  
       
+    
+    ;convertToGeoTIFF
+    ConvertToGeoTIFF,out_name
+    
     print,'第',i+1,'景影像几何校正完毕！'
     ;
     ; Exit ENVI Classic

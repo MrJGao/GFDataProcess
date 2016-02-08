@@ -19,7 +19,7 @@ PRO ENVITask_rpcorthorectification
   ; 启动ENVI5.x
   e = ENVI(/HEADLESS)
   
-  inputPath='D:\HXFarm\GF1'
+  inputPath='F:\HXFarm\GF1'
   
   Files=FILE_SEARCH(inputPath,'*_rc_quac.dat',/FOLD_CASE,count=count)
 
@@ -73,7 +73,7 @@ PRO ENVITask_rpcorthorectification
       print,outputfile+' is already exist'
       continue
     endif
-    print,'第',i+1,'景      ',outputfile
+    print,'第',i+1,'景开始      ',outputfile
     ;
     Task.Execute, Error=error
     ;
